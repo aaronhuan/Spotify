@@ -2,7 +2,7 @@
 in terminal
 tutorial-env\Scripts\activate
 
-$env:FLASK_APP = "main.py"
+$env:FLASK_APP = "app.py"
 
 $env:SPOTIPY_CLIENT_ID="e58f127ad4a0477bb887ebd3fbec37e3"
 $env:SPOTIPY_CLIENT_SECRET="76fdc0cb18e84cd2b69905d9544bd431"
@@ -23,7 +23,7 @@ name playlist = empty
 name description = empty
 
 '''
-from flask import Flask, request, url_for, session, redirect
+from flask import Flask, request, url_for, render_template, session, redirect
 import spotipy 
 from spotipy.oauth2 import SpotifyOAuth
 import time 
@@ -37,7 +37,11 @@ app.config["SESSION_COOKIE_NAME"]= "aarons Cookie" #stores the user's session
 TOKEN_INFO = "token_info"
 
 @app.route("/") #routes but also referred to as endpoints 
-def login(): #automatically log u into spotify (good if you just want data and not interactive site)
+def index():
+    return render_template("homepage.html")
+
+@app.route("/login")
+def login(): #automatically log u into spotify 
     sp_Oauth = create_spotifyOuth()
     auth_url = sp_Oauth.get_authorize_url()
     return redirect(auth_url)
@@ -59,16 +63,16 @@ def getTracks():
         print("user not logged in")
         redirect(url_for("login", _external= False)) #return user to login page
     sp=spotipy.Spotify(auth=token_info['access_token'])
-    return str(sp.current_user_saved_tracks(limit=50, offset=0)['items'][0])
+    return str(sp.current_user_saved_tracks(limit=50, offset=0)['items'][1])
 
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
     if not token_info: # if is None
         raise "exception "
     now = int(time.time())
-    is_expired = token_info['expires_at'] - now < 60
+    is_expired = token_info['expires_at'] - now < 60 
     if is_expired:
-        sp_Oauth= create_spotifyOuth
+        sp_Oauth= create_spotifyOuth()
         token_info = sp_Oauth.refresh_access_token(token_info['refresh_token'])
     
     return token_info
