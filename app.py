@@ -41,7 +41,7 @@ def index():
     return render_template("homepage.html")
 
 @app.route("/login")
-def login(): #automatically log u into spotify 
+def login(): # log u into spotify 
     sp_Oauth = create_spotifyOuth()
     auth_url = sp_Oauth.get_authorize_url()
     return redirect(auth_url)
@@ -53,17 +53,20 @@ def redirectPage():
     code= request.args.get('code')
     token_info=sp_Oauth.get_access_token(code)
     session[TOKEN_INFO]= token_info #save the token information in the session
-    return redirect(url_for('getTracks', _external = True))
+    return redirect(url_for('topTracks', _external=True))
 
-@app.route("/getTracks")
-def getTracks():
+@app.route("/topTracks")
+def topTracks():
+    #improvements : add images, song length, 
     try: 
         token_info = get_token()
     except: 
         print("user not logged in")
         redirect(url_for("login", _external= False)) #return user to login page
     sp=spotipy.Spotify(auth=token_info['access_token'])
-    return str(sp.current_user_saved_tracks(limit=50, offset=0)['items'][1])
+    top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
+    top_track_ids= [top_track['name'] for top_track in top_tracks['items']]
+    return render_template("topsongs.html", song_list=top_track_ids)
 
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
@@ -85,7 +88,6 @@ def create_spotifyOuth() : #everytime use object use a new one
 
 
 '''
-
 
 user= sp.current_user()
 userID =user["id"]
