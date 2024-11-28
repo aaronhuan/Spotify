@@ -65,8 +65,22 @@ def topTracks():
         redirect(url_for("login", _external= False)) #return user to login page
     sp=spotipy.Spotify(auth=token_info['access_token'])
     top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
-    top_track_ids= [top_track['name'] for top_track in top_tracks['items']]
-    return render_template("topsongs.html", song_list=top_track_ids)
+    top_track_names= [top_track['name'] for top_track in top_tracks['items']]
+    return render_template("topsongs.html", song_list=top_track_names)
+
+@app.route("/topArtists")
+def topArtists():
+    #improvements : add images, popularity, play a top track of that artist
+    try: 
+        token_info = get_token()
+    except: 
+        print("user not logged in")
+        redirect(url_for("login", _external= False)) #return user to login page
+
+    sp=spotipy.Spotify(auth=token_info['access_token'])
+    top_artists = (sp.current_user_top_artists(limit=10, offset=0))
+    top_artists_names= [top_artist['name'] for top_artist in top_artists['items']]
+    return render_template("topartists.html", top_artists_names=top_artists_names)
 
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
