@@ -66,7 +66,9 @@ def topTracks():
     sp=spotipy.Spotify(auth=token_info['access_token'])
     top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
     top_track_names= [top_track['name'] for top_track in top_tracks['items']]
-    return render_template("topsongs.html", song_list=top_track_names)
+    top_track_img = [top_track['album']['images'][0]['url'] for top_track in top_tracks['items']]  #seems like images was nested under album inside items               
+
+    return render_template("topsongs.html", song_list=top_track_names, image_list = top_track_img)
 
 @app.route("/topArtists")
 def topArtists():
