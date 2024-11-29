@@ -27,9 +27,10 @@ from flask import Flask, request, url_for, render_template, session, redirect
 import spotipy 
 from spotipy.oauth2 import SpotifyOAuth
 import time 
+import math
 #https://developer.spotify.com/documentation/web-api/concepts/scopes
-scopes_used = "user-library-read playlist-modify-public playlist-modify-private user-top-read user-read-recently-played"
-#scopes for reading, modify playlists
+scopes_used = "user-library-read user-read-private playlist-modify-public playlist-modify-private user-top-read user-read-recently-played"
+#scopes for reading, modify playlists  
 
 app =Flask(__name__) #creates the flask application
 app.secret_key= "hbadkjsJHBHJKB#QLSDSAD"  #the cookie 
@@ -57,18 +58,28 @@ def redirectPage():
 
 @app.route("/topTracks")
 def topTracks():
-    #improvements : add images, song length, 
+    #improvements : song length, 
     try: 
         token_info = get_token()
     except: 
         print("user not logged in")
         redirect(url_for("login", _external= False)) #return user to login page
+
     sp=spotipy.Spotify(auth=token_info['access_token'])
     top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
-    top_track_names= [top_track['name'] for top_track in top_tracks['items']]
-    top_track_img = [top_track['album']['images'][0]['url'] for top_track in top_tracks['items']]  #seems like images was nested under album inside items               
 
-    return render_template("topsongs.html", song_list=top_track_names, image_list = top_track_img)
+    top_track_names= [top_track['name'] for top_track in top_tracks['items']]
+    top_track_img = [top_track['album']['images'][0]['url'] for top_track in top_tracks['items']]  #images dict was nested under album inside items               
+    
+    top_track_alb= [top_track['duration_ms'] for top_track in top_tracks['items']]
+    formated_dur =[]
+    for track in top_track_alb: #convert into minutes, seconds 
+        track = track/1000 #b/c miliseconds
+        min = track//60
+        sec = track % 60
+        formated_dur.append((int(min),math.floor(sec)))
+
+    return render_template("topsongs.html", song_list=top_track_names, image_list = top_track_img, length = formated_dur) 
 
 @app.route("/topArtists")
 def topArtists():
@@ -84,6 +95,27 @@ def topArtists():
     top_artists_names= [top_artist['name'] for top_artist in top_artists['items']]
     return render_template("topartists.html", top_artists_names=top_artists_names)
 
+@app.route("/testing")
+def testing():
+    try: 
+        token_info = get_token()
+    except: 
+        print("user not logged in")
+        redirect(url_for("login", _external= False)) #return user to login page
+
+    sp=spotipy.Spotify(auth=token_info['access_token'])
+    top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
+
+    top_track_alb= [top_track['duration_ms'] for top_track in top_tracks['items']]
+    formated_dur =[]
+    for track in top_track_alb:
+        track = track/1000 #b/c miliseconds
+        min = track//60
+        sec = track % 60
+        formated_dur.append((int(min),math.floor(sec)))
+
+    return render_template("test.html", testing = formated_dur[0])
+ 
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
     if not token_info: # if is None
