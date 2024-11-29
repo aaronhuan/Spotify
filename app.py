@@ -58,7 +58,7 @@ def redirectPage():
 
 @app.route("/topTracks")
 def topTracks():
-    #improvements : song length, 
+
     try: 
         token_info = get_token()
     except: 
@@ -83,7 +83,7 @@ def topTracks():
 
 @app.route("/topArtists")
 def topArtists():
-    #improvements : add images, popularity, play a top track of that artist
+    #improvements : play a top track of that artist using js?
     try: 
         token_info = get_token()
     except: 
@@ -93,7 +93,8 @@ def topArtists():
     sp=spotipy.Spotify(auth=token_info['access_token'])
     top_artists = (sp.current_user_top_artists(limit=10, offset=0))
     top_artists_names= [top_artist['name'] for top_artist in top_artists['items']]
-    return render_template("topartists.html", top_artists_names=top_artists_names)
+    top_artists_pic= [top_artist['images'][0]['url'] for top_artist in top_artists ['items']]
+    return render_template("topartists.html", names=top_artists_names, pictures=top_artists_pic)
 
 @app.route("/testing")
 def testing():
@@ -104,17 +105,12 @@ def testing():
         redirect(url_for("login", _external= False)) #return user to login page
 
     sp=spotipy.Spotify(auth=token_info['access_token'])
-    top_tracks = (sp.current_user_top_tracks(limit=10, offset=0))
+    
+    top_artists = (sp.current_user_top_artists(limit=10, offset=0))
+    top_artists_p= [top_artist['images'][0]['url'] for top_artist in top_artists ['items']]
+    # top_artists_names= [top_artist['name'] for top_artist in top_artists['items']]
 
-    top_track_alb= [top_track['duration_ms'] for top_track in top_tracks['items']]
-    formated_dur =[]
-    for track in top_track_alb:
-        track = track/1000 #b/c miliseconds
-        min = track//60
-        sec = track % 60
-        formated_dur.append((int(min),math.floor(sec)))
-
-    return render_template("test.html", testing = formated_dur[0])
+    return render_template("test.html", testing = top_artists_p[0])
  
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
