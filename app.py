@@ -39,7 +39,13 @@ TOKEN_INFO = "token_info"
 
 @app.route("/") #routes but also referred to as endpoints 
 def index():
-    return render_template("homepage.html")
+    token_info = session.get(TOKEN_INFO, None)
+    if token_info: 
+        # if logged in b/c we have token 
+        return render_template("homepage_l.html")
+    else:
+        # not logged in 
+        return render_template("homepage_ul.html")
 
 @app.route("/login")
 def login(): # log u into spotify 
@@ -58,7 +64,6 @@ def redirectPage():
 
 @app.route("/topTracks")
 def topTracks():
-
     try: 
         token_info = get_token()
     except: 
