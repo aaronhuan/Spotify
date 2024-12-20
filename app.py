@@ -60,7 +60,7 @@ def redirectPage():
     code= request.args.get('code')
     token_info=sp_Oauth.get_access_token(code)
     session[TOKEN_INFO]= token_info #save the token information in the session
-    return redirect(url_for('topTracks', _external=True))
+    return redirect(url_for('index', _external=True))
 
 @app.route("/topTracks")
 def topTracks():
