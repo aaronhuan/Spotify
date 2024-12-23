@@ -101,25 +101,6 @@ def topArtists():
     top_artists_pic= [top_artist['images'][0]['url'] for top_artist in top_artists ['items']]
     return render_template("topartists.html", names=top_artists_names, pictures=top_artists_pic)
 
-@app.route("/testing", methods=["GET", "POST"])
-def testing():
-    try: 
-        token_info = get_token()
-    except: 
-        print("user not logged in")
-        redirect(url_for("login", _external= False)) #return user to login page
-   
-    if request.method == "POST":
-        vname = request.form.get("name")
-        try:
-            create_playlist(vname)
-            return render_template("test.html", message= "Playlist created successfully!")
-        except Exception as e:
-            print(f"Error creating playlist: {str(e)}")
-            return render_template("test.html", error="Failed to create playlist. Please try again.")
-        
-    return render_template("test.html")
-
  
 def get_token(): #to refresh token and check if theres even a token
     token_info = session.get(TOKEN_INFO, None)
@@ -130,7 +111,7 @@ def get_token(): #to refresh token and check if theres even a token
     if is_expired:
         sp_Oauth= create_spotifyOuth()
         token_info = sp_Oauth.refresh_access_token(token_info['refresh_token'])
-    
+        session[TOKEN_INFO]=token_info
     return token_info
 
 def create_spotifyOuth() : #everytime use object use a new one
@@ -138,53 +119,13 @@ def create_spotifyOuth() : #everytime use object use a new one
                                                 client_secret="76fdc0cb18e84cd2b69905d9544bd431",
                                                 redirect_uri=url_for("redirectPage", _external=True), #url_for is a good way to not hardcode the path _external=True will create an absolute path
                                                 scope=scopes_used)
-
-def create_playlist(name):
-        try: 
-            token_info = get_token()
-        except: 
-            print("user not logged in")
-
-        sp=spotipy.Spotify(auth=token_info['access_token'])
-        user= sp.current_user()
-        userID =user["id"]
-        #user_choice = input("based off top artists or tracks: ") this should be a drop down menu 
-
-
-        new_playlist = sp.user_playlist_create( #create new playlist 
-            user=userID,
-            name=name,
-            public=True,          #perhaps also an option to keep it private
-            collaborative=False,
-            description = " ")
-
-        # Extract the playlist ID from the new_playlist dictionary
-        playlist_id = new_playlist['id']
-
-        top_artist= sp.current_user_top_artists(limit=3, offset=0, time_range='medium_term')  #get the top artists returns in dict form, we want["items"]["id"] 
-        artist_ids = [artist['id'] for artist in top_artist['items']]
-
-        #current_user_top_tracks(limit=20, offset=0, time_range='medium_term')
-        top_tracks= sp.current_user_top_tracks(limit=2, offset=0, time_range='medium_term')
-        top_track_ids= [top_track['id'] for top_track in top_tracks['items']]
-
-        #recommendations(seed_artists=None, seed_genres=None, seed_tracks=None, limit=20, country=None, **kwargs) Minimum: 1. Maximum: 100. default 20
-        #Get a list of recommended tracks for one to five seeds. (at least one of seed_artists, seed_tracks and seed_genres are needed)
-        # dict form also, ["tracks"]["id"]
-        list_of_recs = sp.recommendations(seed_artists=artist_ids,
-                        seed_genres=None,
-                        seed_tracks=top_track_ids,
-                        limit=20,
-                        country=None
-                        )
-
-        rec_track_ids = [track['id'] for track in list_of_recs['tracks']]
-
-
-        sp.user_playlist_add_tracks(user=userID, playlist_id=playlist_id, tracks=rec_track_ids)
-
 '''
-
+scopes_used = "user-library-read playlist-modify-public playlist-modify-private user-top-read user-read-recently-played"
+#scopes for reading, modify playlists
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id ="e58f127ad4a0477bb887ebd3fbec37e3",
+                                                client_secret="76fdc0cb18e84cd2b69905d9544bd431",
+                                                redirect_uri="http://localhost:3000",
+                                                scope=scopes_used))
 user= sp.current_user()
 userID =user["id"]
 name_playlist = input("name of playlist created: ")                 #got to add something when the input is nothing b/c it gives error
