@@ -13,15 +13,6 @@ documentation for Spotipy and Spotify Web API
 Spotipy library: https://pypi.org/project/spotipy/#documentation, https://spotipy.readthedocs.io/en/2.24.0/ 
 Spotify Web API: https://developer.spotify.com/documentation/web-api
 
-works for improvement:
-flask
-tokens so others can use it 
-filter our songs reccomended that are already in ur liked library and reissue new songs 
-
-error check- 
-name playlist = empty
-name description = empty
-
 '''
 from flask import Flask, request, url_for, render_template, session, redirect
 import spotipy 
