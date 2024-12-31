@@ -107,8 +107,7 @@ def get_token(): #to refresh token and check if theres even a token
 
 def create_spotifyOuth() : #everytime use object use a new one
     return SpotifyOAuth(client_id ="e58f127ad4a0477bb887ebd3fbec37e3",
-                                                client_secret="                                                client_secret="76fdc0cb18e84cd2b69905d9544bd431",
-",
+                                                client_secret="118bc86dba924dd68dc6037b1fd21a9a",
                                                 redirect_uri=url_for("redirectPage", _external=True), #url_for is a good way to not hardcode the path _external=True will create an absolute path
                                                 scope=scopes_used)
 '''
